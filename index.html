@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universal Mockup Generator</title>
+    <title>Universal Mockup Generator v2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -12,27 +12,15 @@
             background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='12' ry='12' stroke='%23CBD5E1FF' stroke-width='2' stroke-dasharray='10%2c 10' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
         }
         
-        /* Custom Range Slider */
-        input[type=range] {
+        /* Menghilangkan panah default pada input number di Chrome/Safari/Edge */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
             -webkit-appearance: none; 
-            background: transparent; 
+            margin: 0; 
         }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 16px;
-            width: 16px;
-            border-radius: 50%;
-            background: #4f46e5;
-            margin-top: -6px;
-            cursor: pointer;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-        }
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 4px;
-            cursor: pointer;
-            background: #e2e8f0;
-            border-radius: 2px;
+        /* Menghilangkan panah pada Firefox */
+        input[type=number] {
+            -moz-appearance: textfield;
         }
 
         .loader {
@@ -52,11 +40,15 @@
             background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
         }
         
-        /* Tab Navigation */
         .tab-btn.active {
             border-bottom: 2px solid #4f46e5;
             color: #4f46e5;
             font-weight: 700;
+        }
+
+        /* Style untuk tombol kontrol +/- */
+        .ctrl-btn {
+            @apply w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 active:bg-indigo-100 transition-all font-bold shadow-sm;
         }
     </style>
 </head>
@@ -65,7 +57,7 @@
     <!-- Main Grid Container -->
     <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
         
-        <!-- BLOCK 1: HEADER & UPLOADS (Urutan 1 di Mobile & Desktop) -->
+        <!-- BLOCK 1: HEADER & UPLOADS -->
         <div class="lg:col-span-4 bg-white rounded-3xl shadow-xl p-5 lg:p-6 h-fit border border-slate-100 order-1">
             <div class="flex items-center gap-2 mb-4 border-b border-gray-100 pb-4">
                 <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white">
@@ -73,7 +65,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg leading-tight">Mockup Studio</h1>
-                    <p class="text-xs text-gray-500">Universal Frame Loader</p>
+                    <p class="text-xs text-gray-500">Universal Frame Loader v2</p>
                 </div>
             </div>
 
@@ -132,8 +124,7 @@
             </div>
         </div>
 
-        <!-- BLOCK 2: PREVIEW AREA (Urutan 2 di Mobile - Di Tengah) -->
-        <!-- row-span-2 pada Desktop agar mengisi tinggi penuh di sebelah kanan -->
+        <!-- BLOCK 2: PREVIEW AREA -->
         <div class="lg:col-span-8 lg:row-span-2 flex flex-col gap-4 order-2">
             
             <div class="bg-white rounded-3xl border border-gray-200 shadow-sm p-2 flex justify-between items-center px-4 lg:px-6 min-h-[60px]">
@@ -179,8 +170,7 @@
             </div>
         </div>
 
-        <!-- BLOCK 3: SETTINGS & DOWNLOAD (Urutan 3 di Mobile - Di Bawah) -->
-        <!-- Di Desktop ini akan mengisi kolom kiri, di bawah Block 1 -->
+        <!-- BLOCK 3: SETTINGS & DOWNLOAD -->
         <div class="lg:col-span-4 bg-white rounded-3xl shadow-xl p-5 lg:p-6 h-fit border border-slate-100 order-3">
             
             <!-- TABS CONTROLS -->
@@ -203,31 +193,40 @@
                         <button onclick="resetImageSettings()" class="text-[10px] text-gray-400 hover:text-red-500">Reset</button>
                     </div>
 
-                    <!-- Zoom Slider -->
-                    <div>
+                    <!-- Zoom Input -->
+                    <div class="control-row">
                         <div class="flex justify-between text-[10px] text-gray-500 mb-1">
                             <span><i class="fas fa-search-plus mr-1"></i> Zoom (Scale)</span> 
-                            <span id="val-img-scale">1.0x</span>
                         </div>
-                        <input type="range" id="input-img-scale" min="0.5" max="3" value="1" step="0.01" class="w-full" oninput="updateImageTransform()">
+                        <div class="flex items-center gap-2">
+                            <button onclick="adjustValue('input-img-scale', -0.05, 'image')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all font-bold shadow-sm">-</button>
+                            <input type="number" id="input-img-scale" min="0.1" max="5" value="1" step="0.01" class="flex-1 text-center text-xs font-bold text-gray-700 bg-white border border-gray-200 rounded-lg h-8 focus:outline-none focus:border-indigo-500" oninput="updateImageTransform()">
+                            <button onclick="adjustValue('input-img-scale', 0.05, 'image')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all font-bold shadow-sm">+</button>
+                        </div>
                     </div>
 
-                    <!-- Posisi X Slider -->
-                    <div>
+                    <!-- Posisi X Input -->
+                    <div class="control-row">
                         <div class="flex justify-between text-[10px] text-gray-500 mb-1">
-                            <span><i class="fas fa-arrows-alt-h mr-1"></i> Geser Horizontal</span> 
-                            <span id="val-img-x">0px</span>
+                            <span><i class="fas fa-arrows-alt-h mr-1"></i> Geser Horizontal (X)</span> 
                         </div>
-                        <input type="range" id="input-img-x" min="-200" max="200" value="0" step="1" class="w-full" oninput="updateImageTransform()">
+                        <div class="flex items-center gap-2">
+                            <button onclick="adjustValue('input-img-x', -5, 'image')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all font-bold shadow-sm">-</button>
+                            <input type="number" id="input-img-x" min="-500" max="500" value="0" step="1" class="flex-1 text-center text-xs font-bold text-gray-700 bg-white border border-gray-200 rounded-lg h-8 focus:outline-none focus:border-indigo-500" oninput="updateImageTransform()">
+                            <button onclick="adjustValue('input-img-x', 5, 'image')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all font-bold shadow-sm">+</button>
+                        </div>
                     </div>
 
-                    <!-- Posisi Y Slider -->
-                    <div>
+                    <!-- Posisi Y Input -->
+                    <div class="control-row">
                         <div class="flex justify-between text-[10px] text-gray-500 mb-1">
-                            <span><i class="fas fa-arrows-alt-v mr-1"></i> Geser Vertikal</span> 
-                            <span id="val-img-y">0px</span>
+                            <span><i class="fas fa-arrows-alt-v mr-1"></i> Geser Vertikal (Y)</span> 
                         </div>
-                        <input type="range" id="input-img-y" min="-200" max="200" value="0" step="1" class="w-full" oninput="updateImageTransform()">
+                        <div class="flex items-center gap-2">
+                            <button onclick="adjustValue('input-img-y', -5, 'image')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all font-bold shadow-sm">-</button>
+                            <input type="number" id="input-img-y" min="-500" max="500" value="0" step="1" class="flex-1 text-center text-xs font-bold text-gray-700 bg-white border border-gray-200 rounded-lg h-8 focus:outline-none focus:border-indigo-500" oninput="updateImageTransform()">
+                            <button onclick="adjustValue('input-img-y', 5, 'image')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all font-bold shadow-sm">+</button>
+                        </div>
                     </div>
                 </div>
 
@@ -242,26 +241,55 @@
                     </div>
                     
                     <div class="grid grid-cols-2 gap-3">
+                        <!-- Lebar -->
                         <div>
-                            <div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Lebar %</span></div>
-                            <input type="range" id="input-width" min="1" max="100" value="88" step="0.1" class="w-full" oninput="updateScreenMask()">
+                            <div class="text-[10px] text-gray-500 mb-1">Lebar %</div>
+                            <div class="flex items-center gap-1">
+                                <button onclick="adjustValue('input-width', -0.5, 'mask')" class="w-6 h-8 flex items-center justify-center rounded bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold">-</button>
+                                <input type="number" id="input-width" min="1" max="100" value="88" step="0.1" class="w-full text-center text-xs border rounded h-8" oninput="updateScreenMask()">
+                                <button onclick="adjustValue('input-width', 0.5, 'mask')" class="w-6 h-8 flex items-center justify-center rounded bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold">+</button>
+                            </div>
                         </div>
+                        
+                        <!-- Tinggi -->
                         <div>
-                            <div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Tinggi %</span></div>
-                            <input type="range" id="input-height" min="1" max="100" value="95" step="0.1" class="w-full" oninput="updateScreenMask()">
+                            <div class="text-[10px] text-gray-500 mb-1">Tinggi %</div>
+                            <div class="flex items-center gap-1">
+                                <button onclick="adjustValue('input-height', -0.5, 'mask')" class="w-6 h-8 flex items-center justify-center rounded bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold">-</button>
+                                <input type="number" id="input-height" min="1" max="100" value="95" step="0.1" class="w-full text-center text-xs border rounded h-8" oninput="updateScreenMask()">
+                                <button onclick="adjustValue('input-height', 0.5, 'mask')" class="w-6 h-8 flex items-center justify-center rounded bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold">+</button>
+                            </div>
                         </div>
+
+                        <!-- Posisi X -->
                         <div>
-                            <div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Posisi X %</span></div>
-                            <input type="range" id="input-x" min="0" max="100" value="6" step="0.1" class="w-full" oninput="updateScreenMask()">
+                            <div class="text-[10px] text-gray-500 mb-1">Posisi X %</div>
+                            <div class="flex items-center gap-1">
+                                <button onclick="adjustValue('input-x', -0.5, 'mask')" class="w-6 h-8 flex items-center justify-center rounded bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold">-</button>
+                                <input type="number" id="input-x" min="0" max="100" value="6" step="0.1" class="w-full text-center text-xs border rounded h-8" oninput="updateScreenMask()">
+                                <button onclick="adjustValue('input-x', 0.5, 'mask')" class="w-6 h-8 flex items-center justify-center rounded bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold">+</button>
+                            </div>
                         </div>
+
+                        <!-- Posisi Y -->
                         <div>
-                            <div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Posisi Y %</span></div>
-                            <input type="range" id="input-y" min="0" max="100" value="2.5" step="0.1" class="w-full" oninput="updateScreenMask()">
+                            <div class="text-[10px] text-gray-500 mb-1">Posisi Y %</div>
+                            <div class="flex items-center gap-1">
+                                <button onclick="adjustValue('input-y', -0.5, 'mask')" class="w-6 h-8 flex items-center justify-center rounded bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold">-</button>
+                                <input type="number" id="input-y" min="0" max="100" value="2.5" step="0.1" class="w-full text-center text-xs border rounded h-8" oninput="updateScreenMask()">
+                                <button onclick="adjustValue('input-y', 0.5, 'mask')" class="w-6 h-8 flex items-center justify-center rounded bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold">+</button>
+                            </div>
                         </div>
                     </div>
-                    <div>
-                        <div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Radius Sudut</span></div>
-                        <input type="range" id="input-radius" min="0" max="100" value="30" class="w-full" oninput="updateScreenMask()">
+                    
+                    <!-- Radius -->
+                    <div class="mt-2">
+                        <div class="text-[10px] text-gray-500 mb-1">Radius Sudut (px)</div>
+                        <div class="flex items-center gap-1">
+                            <button onclick="adjustValue('input-radius', -1, 'mask')" class="w-8 h-8 flex items-center justify-center rounded bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold">-</button>
+                            <input type="number" id="input-radius" min="0" max="100" value="30" class="flex-1 text-center text-xs border rounded h-8 font-bold" oninput="updateScreenMask()">
+                            <button onclick="adjustValue('input-radius', 1, 'mask')" class="w-8 h-8 flex items-center justify-center rounded bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold">+</button>
+                        </div>
                     </div>
                 </div>
 
@@ -350,15 +378,35 @@
         const imgInputs = {
             scale: document.getElementById('input-img-scale'),
             x: document.getElementById('input-img-x'),
-            y: document.getElementById('input-img-y'),
-            dispScale: document.getElementById('val-img-scale'),
-            dispX: document.getElementById('val-img-x'),
-            dispY: document.getElementById('val-img-y'),
+            y: document.getElementById('input-img-y')
         };
 
         window.onload = function() {
             loadPreset(0);
         };
+
+        // --- HELPER FUNCTION FOR BUTTONS ---
+        function adjustValue(elementId, amount, type) {
+            const el = document.getElementById(elementId);
+            let val = parseFloat(el.value);
+            let min = parseFloat(el.min);
+            let max = parseFloat(el.max);
+            
+            let newVal = val + amount;
+            
+            // Fix floating point errors (e.g., 0.1 + 0.2 = 0.3000004)
+            newVal = Math.round(newVal * 100) / 100;
+
+            if (newVal >= min && newVal <= max) {
+                el.value = newVal;
+                // Trigger update
+                if(type === 'image') {
+                    updateImageTransform();
+                } else {
+                    updateScreenMask();
+                }
+            }
+        }
 
         // --- CORE FUNCTIONS ---
         function loadPreset(index) {
@@ -437,9 +485,8 @@
             const y = imgInputs.y.value;
 
             screenImg.style.transform = `scale(${scale}) translate(${x}px, ${y}px)`;
-            imgInputs.dispScale.innerText = `${scale}x`;
-            imgInputs.dispX.innerText = `${x}px`;
-            imgInputs.dispY.innerText = `${y}px`;
+            
+            // Kita menghapus bagian yang update innerText display karena sekarang menggunakan input field langsung
 
             if(save) {
                 presets[currentPresetIndex].image = { ...presets[currentPresetIndex].image, scale, x, y };
@@ -573,5 +620,4 @@
         }
     </script>
 </body>
-
 </html>
