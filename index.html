@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Mockup Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .upload-pattern {
+            background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='12' ry='12' stroke='%23CBD5E1FF' stroke-width='2' stroke-dasharray='10%2c 10' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+        }
+        
+        /* Custom Range Slider */
+        input[type=range] {
+            -webkit-appearance: none; 
+            background: transparent; 
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #4f46e5;
+            margin-top: -6px;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #e2e8f0;
+            border-radius: 2px;
+        }
+
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #4f46e5;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .bg-checker {
+            background-color: #ffffff;
+            background-image: linear-gradient(45deg, #f1f5f9 25%, transparent 25%), linear-gradient(-45deg, #f1f5f9 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f1f5f9 75%), linear-gradient(-45deg, transparent 75%, #f1f5f9 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+        
+        /* Tab Navigation */
+        .tab-btn.active {
+            border-bottom: 2px solid #4f46e5;
+            color: #4f46e5;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans text-slate-800 p-4">
+
+    <!-- Main Grid Container -->
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+        
+        <!-- BLOCK 1: HEADER & UPLOADS (Urutan 1 di Mobile & Desktop) -->
+        <div class="lg:col-span-4 bg-white rounded-3xl shadow-xl p-5 lg:p-6 h-fit border border-slate-100 order-1">
+            <div class="flex items-center gap-2 mb-4 border-b border-gray-100 pb-4">
+                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">Mockup Studio</h1>
+                    <p class="text-xs text-gray-500">Universal Frame Loader</p>
+                </div>
+            </div>
+
+            <!-- 1. PILIH PRESET HP -->
+            <div class="mb-6">
+                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">1. Pilih Preset HP</label>
+                <div class="grid grid-cols-5 gap-2">
+                    <button onclick="loadPreset(0)" class="preset-btn active px-1 py-2 rounded-xl border-2 border-indigo-600 bg-indigo-50 text-indigo-700 font-bold text-xs transition-all flex flex-col items-center gap-1" id="btn-0">
+                        <i class="fas fa-mobile-alt text-lg"></i> 01
+                    </button>
+                    <button onclick="loadPreset(1)" class="preset-btn px-1 py-2 rounded-xl border-2 border-gray-100 hover:border-indigo-300 text-gray-600 font-bold text-xs transition-all flex flex-col items-center gap-1" id="btn-1">
+                        <i class="fas fa-mobile-alt text-lg"></i> 02
+                    </button>
+                    <button onclick="loadPreset(2)" class="preset-btn px-1 py-2 rounded-xl border-2 border-gray-100 hover:border-indigo-300 text-gray-600 font-bold text-xs transition-all flex flex-col items-center gap-1" id="btn-2">
+                        <i class="fas fa-mobile-alt text-lg"></i> 03
+                    </button>
+                    <button onclick="loadPreset(3)" class="preset-btn px-1 py-2 rounded-xl border-2 border-gray-100 hover:border-indigo-300 text-gray-600 font-bold text-xs transition-all flex flex-col items-center gap-1" id="btn-3">
+                        <i class="fas fa-mobile-alt text-lg"></i> 04
+                    </button>
+                    <button onclick="loadPreset(4)" class="preset-btn px-1 py-2 rounded-xl border-2 border-gray-100 hover:border-indigo-300 text-gray-600 font-bold text-xs transition-all flex flex-col items-center gap-1" id="btn-4">
+                        <i class="fas fa-mobile-alt text-lg"></i> 05
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. UPLOAD ASSETS -->
+            <div class="space-y-4">
+                <!-- Upload Frame (HANYA MUNCUL DI CUSTOM / 05) -->
+                <div id="frame-upload-section" class="hidden transition-all duration-300">
+                    <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex justify-between">
+                        <span>2. Custom Frame HP</span>
+                        <span class="text-indigo-600 cursor-pointer text-[10px] hover:underline" onclick="document.getElementById('frameInput').click()">Pilih File</span>
+                    </label>
+                    <div class="relative group h-10 mb-4">
+                        <input type="file" id="frameInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="handleFrameUpload(event)">
+                        <div class="w-full h-full border border-gray-300 rounded-lg flex items-center px-4 bg-gray-50 text-gray-500 text-xs truncate">
+                            <i class="fas fa-mobile-alt mr-2 text-gray-400"></i> <span id="frameName" class="truncate">Upload gambar frame...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Screenshot (SELALU ADA) -->
+                <div>
+                    <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex justify-between">
+                        <span>Upload Screenshot</span>
+                        <span class="text-indigo-600 cursor-pointer text-[10px] hover:underline" onclick="document.getElementById('screenInput').click()">Ganti File</span>
+                    </label>
+                    <div class="relative group h-24">
+                        <input type="file" id="screenInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="handleScreenUpload(event)">
+                        <div class="w-full h-full upload-pattern rounded-xl flex flex-col items-center justify-center text-gray-400 group-hover:text-indigo-500 transition-colors bg-slate-50 border border-dashed border-gray-300">
+                            <i class="fas fa-image text-xl mb-1"></i>
+                            <span class="text-xs font-medium">Klik Upload Gambar</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BLOCK 2: PREVIEW AREA (Urutan 2 di Mobile - Di Tengah) -->
+        <!-- row-span-2 pada Desktop agar mengisi tinggi penuh di sebelah kanan -->
+        <div class="lg:col-span-8 lg:row-span-2 flex flex-col gap-4 order-2">
+            
+            <div class="bg-white rounded-3xl border border-gray-200 shadow-sm p-2 flex justify-between items-center px-4 lg:px-6 min-h-[60px]">
+                <p class="text-xs text-gray-500 hidden lg:block"><i class="fas fa-info-circle mr-1"></i> Preview Mockup</p>
+                <p class="text-xs text-gray-500 lg:hidden font-semibold">Preview Mockup</p>
+                <button onclick="toggleBackground()" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg text-gray-600 transition-colors">
+                    <i class="fas fa-adjust mr-1"></i> Toggle BG
+                </button>
+            </div>
+
+            <!-- CANVAS UTAMA -->
+            <div id="canvas-container" class="flex-1 bg-gray-300 rounded-3xl overflow-auto flex items-center justify-center min-h-[400px] lg:min-h-[600px] relative border border-gray-200 p-4 lg:p-8">
+                
+                <!-- CAPTURE TARGET -->
+                <div id="capture-target" class="relative inline-block" style="padding: 0;">
+                    
+                    <!-- WRAPPER -->
+                    <div class="relative inline-block">
+                        
+                        <!-- 1. FRAME IMAGE -->
+                        <img id="frame-img" src="https://assets.stickpng.com/images/5e90a61a0d327200040a349c.png" 
+                             class="relative block h-auto z-20 pointer-events-none drop-shadow-2xl" 
+                             style="max-width: 100%; height: auto; min-width: 150px; max-height: 70vh;">
+                        
+                        <!-- 2. SCREEN MASK CONTAINER -->
+                        <div id="screen-container" class="absolute z-10 overflow-hidden bg-black flex items-center justify-center shadow-inner" 
+                             style="top: 2.5%; left: 6%; width: 88%; height: 95%; border-radius: 30px;">
+                            
+                            <!-- 3. GAMBAR SCREENSHOT USER -->
+                            <img id="screen-img" src="" class="w-full h-full object-cover hidden transition-transform origin-center">
+                            
+                            <!-- Placeholder -->
+                            <div id="screen-placeholder" class="text-white text-center p-4">
+                                <i class="fas fa-image text-3xl mb-2 opacity-50"></i>
+                                <p class="text-xs opacity-50 font-mono">Area Layar</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- BLOCK 3: SETTINGS & DOWNLOAD (Urutan 3 di Mobile - Di Bawah) -->
+        <!-- Di Desktop ini akan mengisi kolom kiri, di bawah Block 1 -->
+        <div class="lg:col-span-4 bg-white rounded-3xl shadow-xl p-5 lg:p-6 h-fit border border-slate-100 order-3">
+            
+            <!-- TABS CONTROLS -->
+            <div class="mb-4 flex border-b border-gray-200">
+                <button onclick="switchTab('image')" id="tab-image" class="tab-btn active flex-1 py-2 text-xs text-gray-500 font-medium transition-colors">
+                    <i class="fas fa-crop-alt mr-1"></i> Posisi Gambar
+                </button>
+                <button onclick="switchTab('frame')" id="tab-frame" class="tab-btn flex-1 py-2 text-xs text-gray-500 font-medium transition-colors">
+                    <i class="fas fa-ruler-combined mr-1"></i> Setup Frame
+                </button>
+            </div>
+
+            <!-- CONTROL PANEL -->
+            <div class="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                
+                <!-- A. SETUP GAMBAR (ZOOM & POSISI) -->
+                <div id="controls-image" class="space-y-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-xs font-bold text-indigo-600 uppercase">Konten Layar</h3>
+                        <button onclick="resetImageSettings()" class="text-[10px] text-gray-400 hover:text-red-500">Reset</button>
+                    </div>
+
+                    <!-- Zoom Slider -->
+                    <div>
+                        <div class="flex justify-between text-[10px] text-gray-500 mb-1">
+                            <span><i class="fas fa-search-plus mr-1"></i> Zoom (Scale)</span> 
+                            <span id="val-img-scale">1.0x</span>
+                        </div>
+                        <input type="range" id="input-img-scale" min="0.5" max="3" value="1" step="0.01" class="w-full" oninput="updateImageTransform()">
+                    </div>
+
+                    <!-- Posisi X Slider -->
+                    <div>
+                        <div class="flex justify-between text-[10px] text-gray-500 mb-1">
+                            <span><i class="fas fa-arrows-alt-h mr-1"></i> Geser Horizontal</span> 
+                            <span id="val-img-x">0px</span>
+                        </div>
+                        <input type="range" id="input-img-x" min="-200" max="200" value="0" step="1" class="w-full" oninput="updateImageTransform()">
+                    </div>
+
+                    <!-- Posisi Y Slider -->
+                    <div>
+                        <div class="flex justify-between text-[10px] text-gray-500 mb-1">
+                            <span><i class="fas fa-arrows-alt-v mr-1"></i> Geser Vertikal</span> 
+                            <span id="val-img-y">0px</span>
+                        </div>
+                        <input type="range" id="input-img-y" min="-200" max="200" value="0" step="1" class="w-full" oninput="updateImageTransform()">
+                    </div>
+                </div>
+
+                <!-- B. SETUP FRAME (MASKING) -->
+                <div id="controls-frame" class="space-y-3 hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-xs font-bold text-gray-600 uppercase">Area Masking (Hitam)</h3>
+                        <div class="flex bg-gray-200 rounded-md p-0.5">
+                            <button onclick="setLayerPosition('back')" id="layer-back" class="px-2 py-0.5 text-[10px] rounded bg-white shadow-sm font-bold text-gray-700">Back</button>
+                            <button onclick="setLayerPosition('front')" id="layer-front" class="px-2 py-0.5 text-[10px] rounded text-gray-500">Front</button>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Lebar %</span></div>
+                            <input type="range" id="input-width" min="1" max="100" value="88" step="0.1" class="w-full" oninput="updateScreenMask()">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Tinggi %</span></div>
+                            <input type="range" id="input-height" min="1" max="100" value="95" step="0.1" class="w-full" oninput="updateScreenMask()">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Posisi X %</span></div>
+                            <input type="range" id="input-x" min="0" max="100" value="6" step="0.1" class="w-full" oninput="updateScreenMask()">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Posisi Y %</span></div>
+                            <input type="range" id="input-y" min="0" max="100" value="2.5" step="0.1" class="w-full" oninput="updateScreenMask()">
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Radius Sudut</span></div>
+                        <input type="range" id="input-radius" min="0" max="100" value="30" class="w-full" oninput="updateScreenMask()">
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- DOWNLOAD -->
+            <div class="pt-2">
+                <div class="flex gap-2 mb-3">
+                    <select id="resolution" class="flex-1 bg-white border border-gray-200 text-gray-700 text-xs font-semibold py-2 px-3 rounded-lg focus:outline-none">
+                        <option value="2">HD (2x)</option>
+                        <option value="3">FHD (3x)</option>
+                        <option value="4">4K (4x)</option>
+                    </select>
+                </div>
+                <button onclick="downloadMockup()" id="downloadBtn" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-indigo-200 transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-download"></i> <span>Download PNG</span>
+                </button>
+                <div id="loadingIndicator" class="hidden w-full py-3 flex items-center justify-center gap-2 text-gray-500 text-xs bg-gray-50 rounded-xl border border-gray-200">
+                    <div class="loader"></div> Processing...
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // --- DATA & STATE ---
+        const presets = [
+            { 
+                id: 0, 
+                name: "Apple iPhone 12 Pro Max Graphite",
+                frame: './a1.png', 
+                screen: null, 
+                mask: { w: 80, h: 89, x: 10, y: 5.5, r: 35, layer: 'back' },
+                image: { scale: 1, x: 0, y: 0 }
+            },
+            { 
+                id: 1, 
+                name: "Apple iPhone XS Silver",
+                frame: './a2.png', 
+                screen: null, 
+                mask: { w: 90, h: 92, x: 5, y: 4, r: 20, layer: 'back' },
+                image: { scale: 1, x: 0, y: 0 }
+            },
+            { 
+                id: 2, name: "Samsung Galaxy S20 Utra Cosmic Black",
+                frame: './a3.png', 
+                screen: null, 
+                mask: { w: 92, h: 96, x: 4, y: 2, r: 10, layer: 'back' },
+                image: { scale: 1, x: 0, y: 0 }
+            },
+            { 
+                id: 3, name: "Google Pixel 5 Just Black",
+                frame: './a4.png', 
+                screen: null, 
+                mask: { w: 80, h: 90, x: 10, y: 5, r: 20, layer: 'back' },
+                image: { scale: 1, x: 0, y: 0 }
+            },
+            { 
+                id: 4, name: "Custom",
+                frame: 'https://placehold.co/350x700/222222/FFF.png?text=Upload+Custom', 
+                screen: null, 
+                mask: { w: 88, h: 95, x: 6, y: 2.5, r: 30, layer: 'back' },
+                image: { scale: 1, x: 0, y: 0 }
+            }
+        ];
+
+        let currentPresetIndex = 0;
+
+        // --- DOM ELEMENTS ---
+        const frameImg = document.getElementById('frame-img');
+        const screenImg = document.getElementById('screen-img');
+        const screenPlaceholder = document.getElementById('screen-placeholder');
+        const screenContainer = document.getElementById('screen-container');
+        const frameUploadSection = document.getElementById('frame-upload-section');
+        
+        const maskInputs = {
+            w: document.getElementById('input-width'),
+            h: document.getElementById('input-height'),
+            x: document.getElementById('input-x'),
+            y: document.getElementById('input-y'),
+            r: document.getElementById('input-radius'),
+        };
+
+        const imgInputs = {
+            scale: document.getElementById('input-img-scale'),
+            x: document.getElementById('input-img-x'),
+            y: document.getElementById('input-img-y'),
+            dispScale: document.getElementById('val-img-scale'),
+            dispX: document.getElementById('val-img-x'),
+            dispY: document.getElementById('val-img-y'),
+        };
+
+        window.onload = function() {
+            loadPreset(0);
+        };
+
+        // --- CORE FUNCTIONS ---
+        function loadPreset(index) {
+            currentPresetIndex = index;
+            const data = presets[index];
+
+            // 1. Update UI Button Style
+            document.querySelectorAll('.preset-btn').forEach((btn, i) => {
+                if(i === index) {
+                    btn.classList.add('border-indigo-600', 'bg-indigo-50', 'text-indigo-700');
+                    btn.classList.remove('border-gray-100', 'text-gray-600');
+                } else {
+                    btn.classList.remove('border-indigo-600', 'bg-indigo-50', 'text-indigo-700');
+                    btn.classList.add('border-gray-100', 'text-gray-600');
+                }
+            });
+
+            // 2. Logic Tampilan Upload Frame (Hanya muncul jika CUSTOM / index 4)
+            if (index === 4) {
+                frameUploadSection.classList.remove('hidden');
+            } else {
+                frameUploadSection.classList.add('hidden');
+            }
+
+            // 3. Load Frame Image
+            frameImg.src = data.frame;
+
+            // 4. Load Screen Content (if any)
+            if (data.screen) {
+                screenImg.src = data.screen;
+                screenImg.classList.remove('hidden');
+                screenPlaceholder.classList.add('hidden');
+            } else {
+                if(!screenImg.src || screenImg.src === window.location.href) {
+                    screenImg.classList.add('hidden');
+                    screenPlaceholder.classList.remove('hidden');
+                }
+            }
+
+            // 5. Apply Settings
+            maskInputs.w.value = data.mask.w;
+            maskInputs.h.value = data.mask.h;
+            maskInputs.x.value = data.mask.x;
+            maskInputs.y.value = data.mask.y;
+            maskInputs.r.value = data.mask.r;
+            setLayerPosition(data.mask.layer, false);
+            updateScreenMask(false);
+
+            imgInputs.scale.value = data.image.scale;
+            imgInputs.x.value = data.image.x;
+            imgInputs.y.value = data.image.y;
+            updateImageTransform(false);
+        }
+
+        function updateScreenMask(save = true) {
+            const w = maskInputs.w.value;
+            const h = maskInputs.h.value;
+            const x = maskInputs.x.value;
+            const y = maskInputs.y.value;
+            const r = maskInputs.r.value;
+
+            screenContainer.style.width = `${w}%`;
+            screenContainer.style.height = `${h}%`;
+            screenContainer.style.top = `${y}%`;
+            screenContainer.style.left = `${x}%`;
+            screenContainer.style.borderRadius = `${r}px`;
+
+            if(save) {
+                presets[currentPresetIndex].mask = { ...presets[currentPresetIndex].mask, w, h, x, y, r };
+            }
+        }
+
+        function updateImageTransform(save = true) {
+            const scale = imgInputs.scale.value;
+            const x = imgInputs.x.value;
+            const y = imgInputs.y.value;
+
+            screenImg.style.transform = `scale(${scale}) translate(${x}px, ${y}px)`;
+            imgInputs.dispScale.innerText = `${scale}x`;
+            imgInputs.dispX.innerText = `${x}px`;
+            imgInputs.dispY.innerText = `${y}px`;
+
+            if(save) {
+                presets[currentPresetIndex].image = { ...presets[currentPresetIndex].image, scale, x, y };
+            }
+        }
+
+        function resetImageSettings() {
+            imgInputs.scale.value = 1;
+            imgInputs.x.value = 0;
+            imgInputs.y.value = 0;
+            updateImageTransform();
+        }
+
+        function setLayerPosition(pos, save = true) {
+            const btnBack = document.getElementById('layer-back');
+            const btnFront = document.getElementById('layer-front');
+
+            if (pos === 'back') {
+                frameImg.style.zIndex = 20;
+                screenContainer.style.zIndex = 10;
+                btnBack.classList.add('bg-white', 'shadow-sm', 'font-bold', 'text-gray-700');
+                btnFront.classList.remove('bg-white', 'shadow-sm', 'font-bold', 'text-gray-700');
+            } else {
+                frameImg.style.zIndex = 10;
+                screenContainer.style.zIndex = 20;
+                btnFront.classList.add('bg-white', 'shadow-sm', 'font-bold', 'text-gray-700');
+                btnBack.classList.remove('bg-white', 'shadow-sm', 'font-bold', 'text-gray-700');
+            }
+
+            if(save) {
+                presets[currentPresetIndex].mask.layer = pos;
+            }
+        }
+
+        function switchTab(tab) {
+            const controlsImage = document.getElementById('controls-image');
+            const controlsFrame = document.getElementById('controls-frame');
+            const btnImage = document.getElementById('tab-image');
+            const btnFrame = document.getElementById('tab-frame');
+
+            if (tab === 'image') {
+                controlsImage.classList.remove('hidden');
+                controlsFrame.classList.add('hidden');
+                btnImage.classList.add('active');
+                btnFrame.classList.remove('active');
+            } else {
+                controlsImage.classList.add('hidden');
+                controlsFrame.classList.remove('hidden');
+                btnImage.classList.remove('active');
+                btnFrame.classList.add('active');
+            }
+        }
+
+        function handleFrameUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    frameImg.src = e.target.result;
+                    presets[currentPresetIndex].frame = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleScreenUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    screenImg.src = e.target.result;
+                    screenImg.classList.remove('hidden');
+                    screenPlaceholder.classList.add('hidden');
+                    presets[currentPresetIndex].screen = e.target.result;
+                    resetImageSettings();
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function toggleBackground() {
+            const container = document.getElementById('canvas-container');
+            // Urutan Toggle: Gray (Default) -> White -> Checker -> Gray
+            if(container.classList.contains('bg-gray-300')) {
+                container.classList.remove('bg-gray-300');
+                container.classList.add('bg-white');
+            } else if (container.classList.contains('bg-white')) {
+                container.classList.remove('bg-white');
+                container.classList.add('bg-checker');
+            } else if (container.classList.contains('bg-checker')) {
+                container.classList.remove('bg-checker');
+                container.classList.add('bg-gray-300');
+            } else {
+                // Fallback jika tidak ada class yang cocok
+                container.className = "flex-1 rounded-3xl overflow-auto flex items-center justify-center min-h-[400px] lg:min-h-[600px] relative border border-gray-200 p-4 lg:p-8 bg-gray-300";
+            }
+        }
+
+        function downloadMockup() {
+            const captureTarget = document.getElementById('capture-target');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const resolutionScale = parseInt(document.getElementById('resolution').value);
+
+            downloadBtn.classList.add('hidden');
+            loadingIndicator.classList.remove('hidden');
+
+            setTimeout(() => {
+                html2canvas(captureTarget, {
+                    backgroundColor: null, 
+                    scale: resolutionScale,
+                    useCORS: true,
+                    scrollX: 0,
+                    scrollY: -window.scrollY,
+                    width: captureTarget.offsetWidth, 
+                    height: captureTarget.offsetHeight
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = `mockup-${currentPresetIndex + 1}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+
+                    downloadBtn.classList.remove('hidden');
+                    loadingIndicator.classList.add('hidden');
+                }).catch(err => {
+                    alert('Error rendering: ' + err);
+                    downloadBtn.classList.remove('hidden');
+                    loadingIndicator.classList.add('hidden');
+                });
+            }, 100);
+        }
+    </script>
+</body>
+</html>
