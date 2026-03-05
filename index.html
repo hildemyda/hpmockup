@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universal Mockup Generator v2</title>
+    <title>Universal Mockup Generataor - Alpha</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -12,13 +12,12 @@
             background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='12' ry='12' stroke='%23CBD5E1FF' stroke-width='2' stroke-dasharray='10%2c 10' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
         }
         
-        /* Menghilangkan panah default pada input number di Chrome/Safari/Edge */
+        /* Sembunyikan panah bawaan pada input number untuk tampilan yang lebih bersih */
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { 
             -webkit-appearance: none; 
             margin: 0; 
         }
-        /* Menghilangkan panah pada Firefox */
         input[type=number] {
             -moz-appearance: textfield;
         }
@@ -40,32 +39,34 @@
             background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
         }
         
+        /* Tab Navigation */
         .tab-btn.active {
             border-bottom: 2px solid #4f46e5;
             color: #4f46e5;
             font-weight: 700;
         }
-
-        /* Style untuk tombol kontrol +/- */
-        .ctrl-btn {
-            @apply w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 active:bg-indigo-100 transition-all font-bold shadow-sm;
-        }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen font-sans text-slate-800 p-4">
+<body class="bg-gray-100 min-h-screen font-sans text-slate-800 p-4 flex flex-col">
 
     <!-- Main Grid Container -->
-    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+    <div class="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start flex-1">
         
         <!-- BLOCK 1: HEADER & UPLOADS -->
         <div class="lg:col-span-4 bg-white rounded-3xl shadow-xl p-5 lg:p-6 h-fit border border-slate-100 order-1">
-            <div class="flex items-center gap-2 mb-4 border-b border-gray-100 pb-4">
-                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white">
-                    <i class="fas fa-layer-group"></i>
+            <div class="flex items-center gap-3 mb-4 border-b border-gray-100 pb-4">
+                <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-md">
+                    <i class="fas fa-layer-group text-lg"></i>
                 </div>
-                <div>
-                    <h1 class="font-bold text-lg leading-tight">Mockup Studio</h1>
-                    <p class="text-xs text-gray-500">Universal Frame Loader v2</p>
+                <div class="flex-1">
+                    <h1 class="font-bold text-lg leading-tight text-gray-800">Mockup Studio</h1>
+                    <p class="text-xs text-gray-500">Universal Frame Loader</p>
+                </div>
+                <!-- WATERMARK BADGE -->
+                <div class="text-right">
+                    <span class="text-[9px] font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-100 shadow-sm">
+                        Alpha Project
+                    </span>
                 </div>
             </div>
 
@@ -145,7 +146,8 @@
                     <div class="relative inline-block">
                         
                         <!-- 1. FRAME IMAGE -->
-                        <img id="frame-img" src="https://assets.stickpng.com/images/5e90a61a0d327200040a349c.png" 
+                        <!-- crossorigin dihilangkan agar gambar lokal tidak diblokir saat dimuat via file:/// -->
+                        <img id="frame-img" src="" 
                              class="relative block h-auto z-20 pointer-events-none drop-shadow-2xl" 
                              style="max-width: 100%; height: auto; min-width: 150px; max-height: 70vh;">
                         
@@ -188,107 +190,122 @@
                 
                 <!-- A. SETUP GAMBAR (ZOOM & POSISI) -->
                 <div id="controls-image" class="space-y-4">
-                    <div class="flex justify-between items-center mb-2">
+                    <div class="flex justify-between items-center mb-2 border-b border-gray-200 pb-2">
                         <h3 class="text-xs font-bold text-indigo-600 uppercase">Konten Layar</h3>
-                        <button onclick="resetImageSettings()" class="text-[10px] text-gray-400 hover:text-red-500">Reset</button>
+                        <button onclick="resetImageSettings()" class="text-[10px] text-gray-500 hover:text-red-500 font-medium"><i class="fas fa-undo mr-1"></i>Reset</button>
                     </div>
 
-                    <!-- Zoom Input -->
-                    <div class="control-row">
+                    <!-- Mode Fit -->
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] text-gray-500"><i class="fas fa-expand-arrows-alt mr-1"></i> Mode Fit:</span>
+                        <select id="input-img-fit" class="text-[10px] border border-gray-300 rounded-md px-2 py-1 bg-white outline-none focus:border-indigo-500" onchange="updateImageTransform()">
+                            <option value="cover">Penuhi Layar (Cover)</option>
+                            <option value="contain">Tampilkan Semua (Contain)</option>
+                            <option value="fill">Tarik (Stretch)</option>
+                        </select>
+                    </div>
+
+                    <!-- Zoom Input (+/-) -->
+                    <div>
                         <div class="flex justify-between text-[10px] text-gray-500 mb-1">
                             <span><i class="fas fa-search-plus mr-1"></i> Zoom (Scale)</span> 
                         </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="adjustValue('input-img-scale', -0.05, 'image')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all font-bold shadow-sm">-</button>
-                            <input type="number" id="input-img-scale" min="0.1" max="5" value="1" step="0.01" class="flex-1 text-center text-xs font-bold text-gray-700 bg-white border border-gray-200 rounded-lg h-8 focus:outline-none focus:border-indigo-500" oninput="updateImageTransform()">
-                            <button onclick="adjustValue('input-img-scale', 0.05, 'image')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all font-bold shadow-sm">+</button>
+                        <div class="flex items-center justify-between border border-gray-200 rounded-md overflow-hidden bg-white shadow-sm">
+                            <button onclick="adjustValue('input-img-scale', -0.05)" class="w-10 py-1.5 bg-gray-50 hover:bg-gray-200 text-gray-600 border-r border-gray-200 transition-colors"><i class="fas fa-minus text-[10px]"></i></button>
+                            <input type="number" id="input-img-scale" min="0.1" max="3" value="1" step="0.01" class="flex-1 text-center text-xs font-mono outline-none py-1.5" oninput="updateImageTransform()">
+                            <button onclick="adjustValue('input-img-scale', 0.05)" class="w-10 py-1.5 bg-gray-50 hover:bg-gray-200 text-gray-600 border-l border-gray-200 transition-colors"><i class="fas fa-plus text-[10px]"></i></button>
                         </div>
                     </div>
 
-                    <!-- Posisi X Input -->
-                    <div class="control-row">
+                    <!-- Posisi X Input (+/-) -->
+                    <div>
                         <div class="flex justify-between text-[10px] text-gray-500 mb-1">
                             <span><i class="fas fa-arrows-alt-h mr-1"></i> Geser Horizontal (X)</span> 
                         </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="adjustValue('input-img-x', -5, 'image')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all font-bold shadow-sm">-</button>
-                            <input type="number" id="input-img-x" min="-500" max="500" value="0" step="1" class="flex-1 text-center text-xs font-bold text-gray-700 bg-white border border-gray-200 rounded-lg h-8 focus:outline-none focus:border-indigo-500" oninput="updateImageTransform()">
-                            <button onclick="adjustValue('input-img-x', 5, 'image')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all font-bold shadow-sm">+</button>
+                        <div class="flex items-center justify-between border border-gray-200 rounded-md overflow-hidden bg-white shadow-sm">
+                            <button onclick="adjustValue('input-img-x', -5)" class="w-10 py-1.5 bg-gray-50 hover:bg-gray-200 text-gray-600 border-r border-gray-200 transition-colors"><i class="fas fa-minus text-[10px]"></i></button>
+                            <input type="number" id="input-img-x" min="-1000" max="1000" value="0" step="1" class="flex-1 text-center text-xs font-mono outline-none py-1.5" oninput="updateImageTransform()">
+                            <button onclick="adjustValue('input-img-x', 5)" class="w-10 py-1.5 bg-gray-50 hover:bg-gray-200 text-gray-600 border-l border-gray-200 transition-colors"><i class="fas fa-plus text-[10px]"></i></button>
                         </div>
                     </div>
 
-                    <!-- Posisi Y Input -->
-                    <div class="control-row">
+                    <!-- Posisi Y Input (+/-) -->
+                    <div>
                         <div class="flex justify-between text-[10px] text-gray-500 mb-1">
                             <span><i class="fas fa-arrows-alt-v mr-1"></i> Geser Vertikal (Y)</span> 
                         </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="adjustValue('input-img-y', -5, 'image')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all font-bold shadow-sm">-</button>
-                            <input type="number" id="input-img-y" min="-500" max="500" value="0" step="1" class="flex-1 text-center text-xs font-bold text-gray-700 bg-white border border-gray-200 rounded-lg h-8 focus:outline-none focus:border-indigo-500" oninput="updateImageTransform()">
-                            <button onclick="adjustValue('input-img-y', 5, 'image')" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all font-bold shadow-sm">+</button>
+                        <div class="flex items-center justify-between border border-gray-200 rounded-md overflow-hidden bg-white shadow-sm">
+                            <button onclick="adjustValue('input-img-y', -5)" class="w-10 py-1.5 bg-gray-50 hover:bg-gray-200 text-gray-600 border-r border-gray-200 transition-colors"><i class="fas fa-minus text-[10px]"></i></button>
+                            <input type="number" id="input-img-y" min="-1000" max="1000" value="0" step="1" class="flex-1 text-center text-xs font-mono outline-none py-1.5" oninput="updateImageTransform()">
+                            <button onclick="adjustValue('input-img-y', 5)" class="w-10 py-1.5 bg-gray-50 hover:bg-gray-200 text-gray-600 border-l border-gray-200 transition-colors"><i class="fas fa-plus text-[10px]"></i></button>
                         </div>
                     </div>
                 </div>
 
                 <!-- B. SETUP FRAME (MASKING) -->
                 <div id="controls-frame" class="space-y-3 hidden">
-                    <div class="flex justify-between items-center mb-2">
-                        <h3 class="text-xs font-bold text-gray-600 uppercase">Area Masking (Hitam)</h3>
-                        <div class="flex bg-gray-200 rounded-md p-0.5">
-                            <button onclick="setLayerPosition('back')" id="layer-back" class="px-2 py-0.5 text-[10px] rounded bg-white shadow-sm font-bold text-gray-700">Back</button>
-                            <button onclick="setLayerPosition('front')" id="layer-front" class="px-2 py-0.5 text-[10px] rounded text-gray-500">Front</button>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-3">
-                        <!-- Lebar -->
-                        <div>
-                            <div class="text-[10px] text-gray-500 mb-1">Lebar %</div>
-                            <div class="flex items-center gap-1">
-                                <button onclick="adjustValue('input-width', -0.5, 'mask')" class="w-6 h-8 flex items-center justify-center rounded bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold">-</button>
-                                <input type="number" id="input-width" min="1" max="100" value="88" step="0.1" class="w-full text-center text-xs border rounded h-8" oninput="updateScreenMask()">
-                                <button onclick="adjustValue('input-width', 0.5, 'mask')" class="w-6 h-8 flex items-center justify-center rounded bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold">+</button>
-                            </div>
-                        </div>
+                    <div class="flex justify-between items-center mb-2 border-b border-gray-200 pb-2">
+                        <h3 class="text-xs font-bold text-gray-600 uppercase">Area Masking</h3>
                         
-                        <!-- Tinggi -->
-                        <div>
-                            <div class="text-[10px] text-gray-500 mb-1">Tinggi %</div>
-                            <div class="flex items-center gap-1">
-                                <button onclick="adjustValue('input-height', -0.5, 'mask')" class="w-6 h-8 flex items-center justify-center rounded bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold">-</button>
-                                <input type="number" id="input-height" min="1" max="100" value="95" step="0.1" class="w-full text-center text-xs border rounded h-8" oninput="updateScreenMask()">
-                                <button onclick="adjustValue('input-height', 0.5, 'mask')" class="w-6 h-8 flex items-center justify-center rounded bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold">+</button>
-                            </div>
-                        </div>
-
-                        <!-- Posisi X -->
-                        <div>
-                            <div class="text-[10px] text-gray-500 mb-1">Posisi X %</div>
-                            <div class="flex items-center gap-1">
-                                <button onclick="adjustValue('input-x', -0.5, 'mask')" class="w-6 h-8 flex items-center justify-center rounded bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold">-</button>
-                                <input type="number" id="input-x" min="0" max="100" value="6" step="0.1" class="w-full text-center text-xs border rounded h-8" oninput="updateScreenMask()">
-                                <button onclick="adjustValue('input-x', 0.5, 'mask')" class="w-6 h-8 flex items-center justify-center rounded bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold">+</button>
-                            </div>
-                        </div>
-
-                        <!-- Posisi Y -->
-                        <div>
-                            <div class="text-[10px] text-gray-500 mb-1">Posisi Y %</div>
-                            <div class="flex items-center gap-1">
-                                <button onclick="adjustValue('input-y', -0.5, 'mask')" class="w-6 h-8 flex items-center justify-center rounded bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold">-</button>
-                                <input type="number" id="input-y" min="0" max="100" value="2.5" step="0.1" class="w-full text-center text-xs border rounded h-8" oninput="updateScreenMask()">
-                                <button onclick="adjustValue('input-y', 0.5, 'mask')" class="w-6 h-8 flex items-center justify-center rounded bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold">+</button>
+                        <div class="flex items-center gap-3">
+                            <!-- Tombol Reset Fitur Baru -->
+                            <button onclick="resetFrameSettings()" class="text-[10px] text-red-500 hover:text-red-700 font-medium transition-colors">
+                                <i class="fas fa-undo mr-1"></i>Reset
+                            </button>
+                            
+                            <div class="flex bg-gray-200 rounded-md p-0.5">
+                                <button onclick="setLayerPosition('back')" id="layer-back" class="px-2 py-0.5 text-[10px] rounded bg-white shadow-sm font-bold text-gray-700 transition-all">Back</button>
+                                <button onclick="setLayerPosition('front')" id="layer-front" class="px-2 py-0.5 text-[10px] rounded text-gray-500 transition-all">Front</button>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Radius -->
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                        <!-- Lebar % -->
+                        <div>
+                            <div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Lebar (%)</span></div>
+                            <div class="flex items-center border border-gray-200 rounded-md overflow-hidden bg-white shadow-sm">
+                                <button onclick="adjustValue('input-width', -0.5)" class="px-2 py-1 bg-gray-50 hover:bg-gray-200 text-gray-600 border-r border-gray-200"><i class="fas fa-minus text-[10px]"></i></button>
+                                <input type="number" id="input-width" min="1" max="100" value="88" step="0.1" class="w-full text-center text-[11px] font-mono outline-none py-1" oninput="updateScreenMask()">
+                                <button onclick="adjustValue('input-width', 0.5)" class="px-2 py-1 bg-gray-50 hover:bg-gray-200 text-gray-600 border-l border-gray-200"><i class="fas fa-plus text-[10px]"></i></button>
+                            </div>
+                        </div>
+                        <!-- Tinggi % -->
+                        <div>
+                            <div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Tinggi (%)</span></div>
+                            <div class="flex items-center border border-gray-200 rounded-md overflow-hidden bg-white shadow-sm">
+                                <button onclick="adjustValue('input-height', -0.5)" class="px-2 py-1 bg-gray-50 hover:bg-gray-200 text-gray-600 border-r border-gray-200"><i class="fas fa-minus text-[10px]"></i></button>
+                                <input type="number" id="input-height" min="1" max="100" value="95" step="0.1" class="w-full text-center text-[11px] font-mono outline-none py-1" oninput="updateScreenMask()">
+                                <button onclick="adjustValue('input-height', 0.5)" class="px-2 py-1 bg-gray-50 hover:bg-gray-200 text-gray-600 border-l border-gray-200"><i class="fas fa-plus text-[10px]"></i></button>
+                            </div>
+                        </div>
+                        <!-- Posisi X % -->
+                        <div>
+                            <div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Posisi X (%)</span></div>
+                            <div class="flex items-center border border-gray-200 rounded-md overflow-hidden bg-white shadow-sm">
+                                <button onclick="adjustValue('input-x', -0.5)" class="px-2 py-1 bg-gray-50 hover:bg-gray-200 text-gray-600 border-r border-gray-200"><i class="fas fa-minus text-[10px]"></i></button>
+                                <input type="number" id="input-x" min="0" max="100" value="6" step="0.1" class="w-full text-center text-[11px] font-mono outline-none py-1" oninput="updateScreenMask()">
+                                <button onclick="adjustValue('input-x', 0.5)" class="px-2 py-1 bg-gray-50 hover:bg-gray-200 text-gray-600 border-l border-gray-200"><i class="fas fa-plus text-[10px]"></i></button>
+                            </div>
+                        </div>
+                        <!-- Posisi Y % -->
+                        <div>
+                            <div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Posisi Y (%)</span></div>
+                            <div class="flex items-center border border-gray-200 rounded-md overflow-hidden bg-white shadow-sm">
+                                <button onclick="adjustValue('input-y', -0.5)" class="px-2 py-1 bg-gray-50 hover:bg-gray-200 text-gray-600 border-r border-gray-200"><i class="fas fa-minus text-[10px]"></i></button>
+                                <input type="number" id="input-y" min="0" max="100" value="2.5" step="0.1" class="w-full text-center text-[11px] font-mono outline-none py-1" oninput="updateScreenMask()">
+                                <button onclick="adjustValue('input-y', 0.5)" class="px-2 py-1 bg-gray-50 hover:bg-gray-200 text-gray-600 border-l border-gray-200"><i class="fas fa-plus text-[10px]"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Radius Sudut -->
                     <div class="mt-2">
-                        <div class="text-[10px] text-gray-500 mb-1">Radius Sudut (px)</div>
-                        <div class="flex items-center gap-1">
-                            <button onclick="adjustValue('input-radius', -1, 'mask')" class="w-8 h-8 flex items-center justify-center rounded bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold">-</button>
-                            <input type="number" id="input-radius" min="0" max="100" value="30" class="flex-1 text-center text-xs border rounded h-8 font-bold" oninput="updateScreenMask()">
-                            <button onclick="adjustValue('input-radius', 1, 'mask')" class="w-8 h-8 flex items-center justify-center rounded bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold">+</button>
+                        <div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>Radius Sudut (px)</span></div>
+                        <div class="flex items-center border border-gray-200 rounded-md overflow-hidden bg-white shadow-sm">
+                            <button onclick="adjustValue('input-radius', -1)" class="w-10 py-1.5 bg-gray-50 hover:bg-gray-200 text-gray-600 border-r border-gray-200 transition-colors"><i class="fas fa-minus text-[10px]"></i></button>
+                            <input type="number" id="input-radius" min="0" max="100" value="30" step="1" class="flex-1 text-center text-xs font-mono outline-none py-1.5" oninput="updateScreenMask()">
+                            <button onclick="adjustValue('input-radius', 1)" class="w-10 py-1.5 bg-gray-50 hover:bg-gray-200 text-gray-600 border-l border-gray-200 transition-colors"><i class="fas fa-plus text-[10px]"></i></button>
                         </div>
                     </div>
                 </div>
@@ -298,8 +315,9 @@
             <!-- DOWNLOAD -->
             <div class="pt-2">
                 <div class="flex gap-2 mb-3">
-                    <select id="resolution" class="flex-1 bg-white border border-gray-200 text-gray-700 text-xs font-semibold py-2 px-3 rounded-lg focus:outline-none">
-                        <option value="2">HD (2x)</option>
+                    <select id="resolution" class="flex-1 bg-white border border-gray-200 text-gray-700 text-xs font-semibold py-2 px-3 rounded-lg focus:outline-none shadow-sm">
+                        <option value="1">Standar (1x)</option>
+                        <option value="2" selected>HD (2x)</option>
                         <option value="3">FHD (3x)</option>
                         <option value="4">4K (4x)</option>
                     </select>
@@ -308,7 +326,7 @@
                     <i class="fas fa-download"></i> <span>Download PNG</span>
                 </button>
                 <div id="loadingIndicator" class="hidden w-full py-3 flex items-center justify-center gap-2 text-gray-500 text-xs bg-gray-50 rounded-xl border border-gray-200">
-                    <div class="loader"></div> Processing...
+                    <div class="loader"></div> Processing Rendering...
                 </div>
             </div>
 
@@ -316,7 +334,20 @@
 
     </div>
 
+    <!-- WATERMARK FOOTER -->
+    <div class="max-w-7xl mx-auto w-full mt-6 text-center pb-4">
+        <p class="text-[11px] text-gray-400 font-medium">
+            &copy; 2026 <span class="text-indigo-500 font-bold">Alpha</span>. All rights reserved.
+        </p>
+    </div>
+
     <script>
+        const customPlaceholderSVG = `data:image/svg+xml;base64,` + btoa(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="350" height="700">
+            <rect width="100%" height="100%" fill="#222"/>
+            <text x="50%" y="50%" fill="#FFF" font-family="sans-serif" font-size="20" text-anchor="middle" dominant-baseline="middle">Upload Custom</text>
+        </svg>`);
+
         // --- DATA & STATE ---
         const presets = [
             { 
@@ -325,7 +356,7 @@
                 frame: './a1.png', 
                 screen: null, 
                 mask: { w: 80, h: 89, x: 10, y: 5.5, r: 35, layer: 'back' },
-                image: { scale: 1, x: 0, y: 0 }
+                image: { scale: 1, x: 0, y: 0, fit: 'cover' }
             },
             { 
                 id: 1, 
@@ -333,30 +364,33 @@
                 frame: './a2.png', 
                 screen: null, 
                 mask: { w: 90, h: 92, x: 5, y: 4, r: 20, layer: 'back' },
-                image: { scale: 1, x: 0, y: 0 }
+                image: { scale: 1, x: 0, y: 0, fit: 'cover' }
             },
             { 
                 id: 2, name: "Samsung Galaxy S20 Utra Cosmic Black",
                 frame: './a3.png', 
                 screen: null, 
                 mask: { w: 78, h: 86, x: 11, y: 7, r: 14, layer: 'back' },
-                image: { scale: 1, x: 0, y: 0 }
+                image: { scale: 1, x: 0, y: 0, fit: 'cover' }
             },
             { 
                 id: 3, name: "Google Pixel 5 Just Black",
                 frame: './a4.png', 
                 screen: null, 
                 mask: { w: 80, h: 90, x: 10.5, y: 5.5, r: 20, layer: 'back' },
-                image: { scale: 1, x: 0, y: 0 }
+                image: { scale: 1, x: 0, y: 0, fit: 'cover' }
             },
             { 
                 id: 4, name: "Custom",
-                frame: 'https://placehold.co/350x700/222222/FFF.png?text=Upload+Custom', 
+                frame: customPlaceholderSVG, 
                 screen: null, 
                 mask: { w: 88, h: 95, x: 6, y: 2.5, r: 30, layer: 'back' },
-                image: { scale: 1, x: 0, y: 0 }
+                image: { scale: 1, x: 0, y: 0, fit: 'cover' }
             }
         ];
+
+        // Menyimpan status default untuk fitur Reset
+        const defaultPresets = JSON.parse(JSON.stringify(presets));
 
         let currentPresetIndex = 0;
 
@@ -372,39 +406,48 @@
             h: document.getElementById('input-height'),
             x: document.getElementById('input-x'),
             y: document.getElementById('input-y'),
-            r: document.getElementById('input-radius'),
+            r: document.getElementById('input-radius')
         };
 
         const imgInputs = {
             scale: document.getElementById('input-img-scale'),
             x: document.getElementById('input-img-x'),
-            y: document.getElementById('input-img-y')
+            y: document.getElementById('input-img-y'),
+            fit: document.getElementById('input-img-fit')
         };
 
         window.onload = function() {
             loadPreset(0);
         };
 
-        // --- HELPER FUNCTION FOR BUTTONS ---
-        function adjustValue(elementId, amount, type) {
-            const el = document.getElementById(elementId);
-            let val = parseFloat(el.value);
-            let min = parseFloat(el.min);
-            let max = parseFloat(el.max);
-            
-            let newVal = val + amount;
-            
-            // Fix floating point errors (e.g., 0.1 + 0.2 = 0.3000004)
-            newVal = Math.round(newVal * 100) / 100;
+        // --- FUNGSI BARU: ADJUST VALUE UNTUK TOMBOL +/- ---
+        function adjustValue(id, delta) {
+            const input = document.getElementById(id);
+            let val = parseFloat(input.value) || 0;
+            val += delta;
 
-            if (newVal >= min && newVal <= max) {
-                el.value = newVal;
-                // Trigger update
-                if(type === 'image') {
-                    updateImageTransform();
-                } else {
-                    updateScreenMask();
-                }
+            const min = input.getAttribute('min');
+            const max = input.getAttribute('max');
+            
+            if (min !== null && val < parseFloat(min)) val = parseFloat(min);
+            if (max !== null && val > parseFloat(max)) val = parseFloat(max);
+
+            // Perbaiki format desimal sesuai step
+            const step = input.getAttribute('step');
+            if (step && step.includes('.')) {
+                const decimals = step.split('.')[1].length;
+                val = parseFloat(val.toFixed(decimals));
+            } else {
+                val = Math.round(val);
+            }
+
+            input.value = val;
+
+            // Trigger update otomatis
+            if (id.startsWith('input-img')) {
+                updateImageTransform();
+            } else {
+                updateScreenMask();
             }
         }
 
@@ -424,17 +467,41 @@
                 }
             });
 
-            // 2. Logic Tampilan Upload Frame (Hanya muncul jika CUSTOM / index 4)
+            // 2. Logic Tampilan Upload Frame
             if (index === 4) {
                 frameUploadSection.classList.remove('hidden');
             } else {
                 frameUploadSection.classList.add('hidden');
             }
 
-            // 3. Load Frame Image
-            frameImg.src = data.frame;
+            // 3. Load Frame Image (Dengan penanganan Taint Canvas Otomatis)
+            const frameSrc = data.frame;
+            if (frameSrc.startsWith('data:')) {
+                frameImg.src = frameSrc;
+            } else {
+                // Mencoba fetch dan mengubah path lokal menjadi Base64
+                // Ini akan mencegah error Tainted Canvas JIKA dijalankan di server lokal (Live Server)
+                fetch(frameSrc)
+                    .then(res => {
+                        if (!res.ok) throw new Error("Network response error");
+                        return res.blob();
+                    })
+                    .then(blob => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                            frameImg.src = reader.result;
+                        };
+                        reader.readAsDataURL(blob);
+                    })
+                    .catch(err => {
+                        // Gagal mengubah (biasanya karena dibuka langsung via file:///)
+                        // Fallback menggunakan URL asli, tapi kemungkinan besar akan kena blokir saat didownload
+                        console.warn('Fallback ke URL langsung. Fitur unduh mungkin terkunci.', err);
+                        frameImg.src = frameSrc;
+                    });
+            }
 
-            // 4. Load Screen Content (if any)
+            // 4. Load Screen Content
             if (data.screen) {
                 screenImg.src = data.screen;
                 screenImg.classList.remove('hidden');
@@ -446,7 +513,7 @@
                 }
             }
 
-            // 5. Apply Settings
+            // 5. Apply Frame Settings
             maskInputs.w.value = data.mask.w;
             maskInputs.h.value = data.mask.h;
             maskInputs.x.value = data.mask.x;
@@ -455,10 +522,25 @@
             setLayerPosition(data.mask.layer, false);
             updateScreenMask(false);
 
-            imgInputs.scale.value = data.image.scale;
-            imgInputs.x.value = data.image.x;
-            imgInputs.y.value = data.image.y;
+            // 6. Apply Image Settings
+            imgInputs.scale.value = data.image.scale || 1;
+            imgInputs.x.value = data.image.x || 0;
+            imgInputs.y.value = data.image.y || 0;
+            imgInputs.fit.value = data.image.fit || 'cover';
             updateImageTransform(false);
+        }
+
+        function resetFrameSettings() {
+            const defaultData = defaultPresets[currentPresetIndex].mask;
+            
+            maskInputs.w.value = defaultData.w;
+            maskInputs.h.value = defaultData.h;
+            maskInputs.x.value = defaultData.x;
+            maskInputs.y.value = defaultData.y;
+            maskInputs.r.value = defaultData.r;
+            
+            setLayerPosition(defaultData.layer, true);
+            updateScreenMask(true);
         }
 
         function updateScreenMask(save = true) {
@@ -483,13 +565,13 @@
             const scale = imgInputs.scale.value;
             const x = imgInputs.x.value;
             const y = imgInputs.y.value;
+            const fit = imgInputs.fit.value;
 
             screenImg.style.transform = `scale(${scale}) translate(${x}px, ${y}px)`;
-            
-            // Kita menghapus bagian yang update innerText display karena sekarang menggunakan input field langsung
+            screenImg.style.objectFit = fit;
 
             if(save) {
-                presets[currentPresetIndex].image = { ...presets[currentPresetIndex].image, scale, x, y };
+                presets[currentPresetIndex].image = { ...presets[currentPresetIndex].image, scale, x, y, fit };
             }
         }
 
@@ -497,6 +579,7 @@
             imgInputs.scale.value = 1;
             imgInputs.x.value = 0;
             imgInputs.y.value = 0;
+            imgInputs.fit.value = 'cover';
             updateImageTransform();
         }
 
@@ -547,6 +630,7 @@
                 reader.onload = function(e) {
                     frameImg.src = e.target.result;
                     presets[currentPresetIndex].frame = e.target.result;
+                    defaultPresets[currentPresetIndex].frame = e.target.result; 
                 }
                 reader.readAsDataURL(file);
             }
@@ -569,7 +653,6 @@
 
         function toggleBackground() {
             const container = document.getElementById('canvas-container');
-            // Urutan Toggle: Gray (Default) -> White -> Checker -> Gray
             if(container.classList.contains('bg-gray-300')) {
                 container.classList.remove('bg-gray-300');
                 container.classList.add('bg-white');
@@ -578,10 +661,10 @@
                 container.classList.add('bg-checker');
             } else if (container.classList.contains('bg-checker')) {
                 container.classList.remove('bg-checker');
-                container.classList.add('bg-gray-300');
+                container.classList.add('bg-transparent');
             } else {
-                // Fallback jika tidak ada class yang cocok
-                container.className = "flex-1 rounded-3xl overflow-auto flex items-center justify-center min-h-[400px] lg:min-h-[600px] relative border border-gray-200 p-4 lg:p-8 bg-gray-300";
+                container.classList.remove('bg-transparent');
+                container.classList.add('bg-gray-300');
             }
         }
 
@@ -594,29 +677,58 @@
             downloadBtn.classList.add('hidden');
             loadingIndicator.classList.remove('hidden');
 
+            const frameRect = frameImg.getBoundingClientRect();
+            const origW = frameImg.style.width;
+            const origH = frameImg.style.height;
+            const origMaxH = frameImg.style.maxHeight;
+
+            frameImg.style.width = frameRect.width + 'px';
+            frameImg.style.height = frameRect.height + 'px';
+            frameImg.style.maxHeight = 'none';
+
             setTimeout(() => {
                 html2canvas(captureTarget, {
                     backgroundColor: null, 
                     scale: resolutionScale,
-                    useCORS: true,
-                    scrollX: 0,
-                    scrollY: -window.scrollY,
-                    width: captureTarget.offsetWidth, 
-                    height: captureTarget.offsetHeight
+                    useCORS: true, 
+                    allowTaint: true, // Pastikan tetap dirender agar pop-up error bisa ditangkap
+                    logging: false
                 }).then(canvas => {
-                    const link = document.createElement('a');
-                    link.download = `mockup-${currentPresetIndex + 1}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
+                    frameImg.style.width = origW;
+                    frameImg.style.height = origH;
+                    frameImg.style.maxHeight = origMaxH;
+
+                    try {
+                        // Proses ini yang memicu "Tainted Canvas" Security Error jika ada file:///
+                        const dataUrl = canvas.toDataURL('image/png', 1.0);
+                        
+                        const link = document.createElement('a');
+                        link.download = `mockup-result-${Date.now()}.png`;
+                        link.href = dataUrl;
+                        link.click();
+                        
+                    } catch (e) {
+                        // Menangkap error eksklusif Tainted Canvas
+                        if (e.name === 'SecurityError' || e.message.toLowerCase().includes('tainted')) {
+                            alert("🔒 BLOKIR KEAMANAN BROWSER (Tainted Canvas)\n\nBrowser otomatis memblokir fitur unduh karena Anda memuat file eksternal (misal ./a1.png) tanpa menggunakan Server (hanya klik 2x lewat file:///).\n\n💡 CARA MENGATASINYA:\n1. Buka file HTML ini menggunakan ekstensi 'Live Server' di aplikasi VS Code, ATAU\n2. Gunakan preset '05 (Custom)' dan Upload manual gambar a1.png dari komputer Anda.");
+                        } else {
+                            alert('Terjadi kesalahan saat mengekstrak gambar: ' + e.message);
+                        }
+                    }
 
                     downloadBtn.classList.remove('hidden');
                     loadingIndicator.classList.add('hidden');
                 }).catch(err => {
-                    alert('Error rendering: ' + err);
+                    frameImg.style.width = origW;
+                    frameImg.style.height = origH;
+                    frameImg.style.maxHeight = origMaxH;
+                    
+                    alert('Gagal me-render HTML ke Canvas: ' + err.message);
+                    
                     downloadBtn.classList.remove('hidden');
                     loadingIndicator.classList.add('hidden');
                 });
-            }, 100);
+            }, 150);
         }
     </script>
 </body>
